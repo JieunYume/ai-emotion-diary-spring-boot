@@ -1,7 +1,7 @@
 spring:
   config:
     import:
-      - classpath:/application-db.yml
+      - classpath:/application-local.yml
       - classpath:/application-mail.yml
       - classpath:/application-s3.yml
   servlet:
