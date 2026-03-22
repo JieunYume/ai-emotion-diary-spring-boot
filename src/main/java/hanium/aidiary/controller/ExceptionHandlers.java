@@ -3,6 +3,7 @@ package hanium.aidiary.controller;
 import hanium.aidiary.exception.CustomException;
 import hanium.aidiary.handler.ErrorDto;
 import hanium.aidiary.handler.UnknownErrorDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +13,16 @@ import static hanium.aidiary.handler.ErrorCode.INTERNAL_SERVER_ERROR;
 
 @RestControllerAdvice
 public class ExceptionHandlers {
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected ResponseEntity handleConstraintViolationException(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(v -> v.getMessage())
+                .findFirst()
+                .orElse("입력값이 올바르지 않습니다");
+        return new ResponseEntity(new ErrorDto(400, message), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler({ CustomException.class })
     protected ResponseEntity handleCustomException(CustomException ex) {
         return new ResponseEntity(new ErrorDto(ex.getErrorCode().getStatus(), ex.getErrorCode().getMessage()), HttpStatus.valueOf(ex.getErrorCode().getStatus()));

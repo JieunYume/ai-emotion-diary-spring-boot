@@ -36,8 +36,8 @@ public class DiaryService {
     private final MemberRepository memberRepository;
 
     @Transactional(isolation = Isolation.SERIALIZABLE) // 이게뭐징
-    public DiaryCreateResponse createDiary(DiaryCreateRequest diaryRequest) throws CustomException{
-        Member member = memberRepository.findById(diaryRequest.getMemberId())
+    public DiaryCreateResponse createDiary(Long memberId, DiaryCreateRequest diaryRequest) throws CustomException{
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         // 플라스크랑 연동해야겠는걸ㄴ?
@@ -131,7 +131,7 @@ public class DiaryService {
 
 // 이메일이 아닌 memeber_id 받기
     @Transactional
-    public int deleteDiary(DiaryDeleteRequest diaryDeleteRequest) throws CustomException {
+    public int deleteDiary(Long memberId, DiaryDeleteRequest diaryDeleteRequest) throws CustomException {
         Optional<Diary> optionalDiary=diaryRepository.findById(diaryDeleteRequest.getDiaryId());
         if (optionalDiary.isEmpty()) {
             throw new CustomException(DIARY_NOT_FOUND);
@@ -139,7 +139,7 @@ public class DiaryService {
         Diary deleteDiary = optionalDiary.get();
         System.out.println(deleteDiary.toString());
 
-        if(deleteDiary.getMember().getId() == diaryDeleteRequest.getMemberId()) {
+        if(deleteDiary.getMember().getId().equals(memberId)) {
             diaryRepository.delete(deleteDiary);
             return 1;
         }
@@ -147,11 +147,11 @@ public class DiaryService {
     }
 
     @Transactional
-    public DiaryResponse updateDiary(long diaryId, DiaryCreateRequest diaryCreateRequest) throws CustomException, IllegalArgumentException{
+    public DiaryResponse updateDiary(long diaryId, Long memberId, DiaryCreateRequest diaryCreateRequest) throws CustomException, IllegalArgumentException{
         Diary originalDiary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new CustomException(DIARY_NOT_FOUND));
         Diary updateDiary = originalDiary;
-        if(updateDiary.getMember().getId() == diaryCreateRequest.getMemberId()) {
+        if(updateDiary.getMember().getId().equals(memberId)) {
 
 
             //patch작업을 위한 조건물 및 updateDiaryEntity초기화문

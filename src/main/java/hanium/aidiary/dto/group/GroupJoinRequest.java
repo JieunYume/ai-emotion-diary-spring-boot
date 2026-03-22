@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GroupJoinRequest {
-    private Long memberId;
     private String invitationCode;
 }

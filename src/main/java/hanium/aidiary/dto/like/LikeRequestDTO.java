@@ -7,11 +7,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LikeRequestDTO {
-    private Long memberId;
     private Long diaryId;
 
-    public LikeRequestDTO(Long memberId, Long diaryId) {
-        this.memberId = memberId;
+    public LikeRequestDTO(Long diaryId) {
         this.diaryId = diaryId;
     }
 }

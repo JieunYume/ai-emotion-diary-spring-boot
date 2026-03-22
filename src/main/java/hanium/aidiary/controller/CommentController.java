@@ -5,6 +5,7 @@ import hanium.aidiary.dto.comment.CommentResponse;
 import hanium.aidiary.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,10 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
 
     private final CommentService commentService;
+
     // 댓글 작성
     @PostMapping("/")
-    public ResponseEntity<Object> createComment(@RequestBody CommentRequest request) {
-        return ResponseEntity.ok(commentService.createComment(request));
+    public ResponseEntity<Object> createComment(@RequestBody CommentRequest request, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(commentService.createComment(memberId, request));
     }
 
     // 댓글 조회 -> DiaryController

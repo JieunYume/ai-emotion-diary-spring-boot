@@ -43,3 +43,5 @@ application-db.yml
 application-local.yml
 application-mail.yml
 application-s3.yml
+
+CLAUDE.md

@@ -23,9 +23,9 @@ public class LikeService {
 
 
     @Transactional
-    public void add(LikeRequestDTO likeRequestDTO) throws NullPointerException {
+    public void add(Long memberId, LikeRequestDTO likeRequestDTO) throws NullPointerException {
 
-        Member member = memberRepository.findById(likeRequestDTO.getMemberId())
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         Diary diary = diaryRepository.findById(likeRequestDTO.getDiaryId())
@@ -46,9 +46,9 @@ public class LikeService {
     }
 
     @Transactional
-    public void delete(LikeRequestDTO likeRequestDTO) {
+    public void delete(Long memberId, LikeRequestDTO likeRequestDTO) {
 
-        Member member = memberRepository.findById(likeRequestDTO.getMemberId())
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         Diary diary = diaryRepository.findById(likeRequestDTO.getDiaryId())

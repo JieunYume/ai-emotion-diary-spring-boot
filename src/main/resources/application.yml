@@ -18,6 +18,10 @@ spring:
         format_sql: true #To beautify or pretty print the SQL
         show_sql: true #show sql
 
+jwt:
+  secret: ${JWT_SECRET:default-secret-for-dev-only}
+  expiration: 86400000  # 24시간 (ms)
+
 logging.level:
   org.hibernate.SQL: debug
   org.hibernate.orm.jdbc.bind: trace #스프링 부트 3.x, hibernate6

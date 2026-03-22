@@ -3,12 +3,16 @@ package hanium.aidiary.service;
 import com.amazonaws.services.s3.AmazonS3;
 import hanium.aidiary.domain.Group;
 import hanium.aidiary.domain.Member;
-import hanium.aidiary.dto.group.*;
+import hanium.aidiary.dto.group.GroupCreateRequest;
+import hanium.aidiary.dto.group.GroupFindMembersResponse;
 import hanium.aidiary.dto.group.GroupFindMembersResponse.GroupMemberDto;
+import hanium.aidiary.dto.group.GroupJoinRequest;
+import hanium.aidiary.dto.group.GroupResponse;
 import hanium.aidiary.exception.CustomException;
 import hanium.aidiary.repository.GroupRepository;
 import hanium.aidiary.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,9 @@ public class GroupService {
     private final MemberRepository memberRepository;
     private final AmazonS3 amazonS3;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
     private int codeLength = 8;
     private final char[] characterTable = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
             'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
@@ -33,8 +40,8 @@ public class GroupService {
 
     // 그룹 생성
     @Transactional
-    public GroupResponse createGroup(GroupCreateRequest request) {
-        Member member = memberRepository.findById(request.getCreatorId())
+    public GroupResponse createGroup(Long memberId, GroupCreateRequest request) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         String invitationCode = excuteGenerate();
@@ -72,10 +79,10 @@ public class GroupService {
     // 그룹 가입
 // orElseThrow는 Optional의 인자가 null일 경우 예외처리를 시킨다.
     @Transactional
-    public Object joinGroup(GroupJoinRequest request) {
+    public Object joinGroup(Long memberId, GroupJoinRequest request) {
         Group group = groupRepository.findByInvitationCode(request.getInvitationCode())
                 .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND));
-        Member joinMember = memberRepository.findById(request.getMemberId())
+        Member joinMember = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         joinMember.setGroup(group);
         memberRepository.save(joinMember);
@@ -110,7 +117,7 @@ public class GroupService {
             if (groupMember.getId() == member.getId()) { // 사용자 자신은 제외
                 continue;
             }
-            URL url = amazonS3.getUrl("aidiary-bucket", groupMember.getFile().getOrigFilename());
+            URL url = amazonS3.getUrl(bucket, groupMember.getFile().getOrigFilename());
             String urltext = ""+url;
 
             groupMemberList.add(GroupMemberDto.builder()
@@ -127,8 +134,8 @@ public class GroupService {
     }
 
     // 그룹 나가기
-    public Object leaveGroup(GroupRequest request) {
-        Member member = memberRepository.findById(request.getMemberId())
+    public Object leaveGroup(Long memberId) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         if (member.getGroup() == null) {

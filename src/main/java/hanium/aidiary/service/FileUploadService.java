@@ -91,7 +91,7 @@ public class FileUploadService {
 
 
     public String getFileUrl(String origFilename) {
-        URL url = amazonS3.getUrl("aidiary-bucket", origFilename);
+        URL url = amazonS3.getUrl(bucket, origFilename);
         String urltext = ""+url;
         return urltext;
     }

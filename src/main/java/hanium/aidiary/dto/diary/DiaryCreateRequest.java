@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DiaryCreateRequest {
-    private Long memberId;
     private String moodEmojiName; // 감정 이모지 이름
 
     private String thing;

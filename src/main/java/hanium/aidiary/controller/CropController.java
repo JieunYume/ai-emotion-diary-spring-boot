@@ -1,11 +1,10 @@
 package hanium.aidiary.controller;
 
-import hanium.aidiary.dto.crop.CropHarvestRequest;
-import hanium.aidiary.dto.crop.CropRequest;
 import hanium.aidiary.dto.crop.CropResponse;
 import hanium.aidiary.service.CropService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor // 권한에 따라 메소드의 호출을 제한
@@ -16,17 +15,13 @@ public class CropController {
 
     // 농작물 조회
     @GetMapping("/")
-    public ResponseEntity<CropResponse> findCrop(@RequestParam Long memberId) {
+    public ResponseEntity<CropResponse> findCrop(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(cropService.findCrop(memberId));
     }
-
 
     @PostMapping("/harvest")
     public ResponseEntity<CropResponse> harvestCrop(@RequestParam Long cropId) {
         return ResponseEntity.ok(cropService.harvestCrop(cropId));
     }
-
-
-
-
 }

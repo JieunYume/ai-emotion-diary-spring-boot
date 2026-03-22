@@ -11,10 +11,14 @@ import hanium.aidiary.service.EmailService;
 import hanium.aidiary.service.FileStorageService;
 import hanium.aidiary.service.FileUploadService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,9 +26,10 @@ import java.io.UnsupportedEncodingException;
 
 import static hanium.aidiary.handler.ErrorCode.IMAGE_NOT_EXIST;
 
-@RestController // 데이터만 리턴해줄 것이다
+@RestController
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
@@ -58,15 +63,18 @@ public class AuthController {
 
  */
 
-    @PostMapping(value ="/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Object> join(@RequestPart JoinRequest joinRequest,
-                                       @RequestPart MultipartFile imgFile) {
+    @PostMapping(value ="/join", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> join(
+            @RequestParam @NotBlank(message = "이메일을 입력해주세요") @Email(message = "이메일 형식이 올바르지 않습니다") String email,
+            @RequestParam @NotBlank(message = "비밀번호를 입력해주세요") @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다") String password,
+            @RequestParam @NotBlank(message = "닉네임을 입력해주세요") String nickName,
+            @RequestPart MultipartFile imgFile) {
         if(imgFile.isEmpty()){
             throw new CustomException(IMAGE_NOT_EXIST);
         }
 
         File savedFile = fileUploadService.uploadFile(imgFile);
-        return ResponseEntity.ok(authService.join(joinRequest, savedFile.getId()));
+        return ResponseEntity.ok(authService.join(new JoinRequest(email, password, nickName), savedFile.getId()));
     }
 
 

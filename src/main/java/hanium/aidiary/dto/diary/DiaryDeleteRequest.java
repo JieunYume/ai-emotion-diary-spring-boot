@@ -9,5 +9,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DiaryDeleteRequest {
     Long diaryId;
-    Long memberId;
 }

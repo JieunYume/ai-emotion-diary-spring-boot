@@ -6,6 +6,7 @@ import hanium.aidiary.service.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor // 권한에 따라 메소드의 호출을 제한
@@ -16,15 +17,16 @@ public class LikeController {
     private final DiaryService diaryService;
 
     @PostMapping("/")
-    public ResponseEntity<?> insert(@RequestBody @Valid LikeRequestDTO likeRequestDTO) {
-        likeService.add(likeRequestDTO);
+    public ResponseEntity<?> insert(@RequestBody @Valid LikeRequestDTO likeRequestDTO, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        likeService.add(memberId, likeRequestDTO);
         return ResponseEntity.ok("좋아요 추가 성공");
     }
 
     @DeleteMapping("/")
-    public ResponseEntity<?> delete(@RequestBody @Valid LikeRequestDTO likeRequestDTO) {
-        likeService.delete(likeRequestDTO);
+    public ResponseEntity<?> delete(@RequestBody @Valid LikeRequestDTO likeRequestDTO, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        likeService.delete(memberId, likeRequestDTO);
         return ResponseEntity.ok("좋아요 삭제 성공");
     }
-
 }

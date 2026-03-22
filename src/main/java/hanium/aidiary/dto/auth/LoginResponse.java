@@ -13,4 +13,5 @@ public class LoginResponse {
     private Long memberId;
     private String nickName;
     private String fileUrl;
+    private String accessToken;
 }

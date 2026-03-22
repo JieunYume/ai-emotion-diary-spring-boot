@@ -29,8 +29,8 @@ public class CommentService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public CommentResponse createComment(CommentRequest request) {
-        Member member = memberRepository.findById(request.getMemberId())
+    public CommentResponse createComment(Long memberId, CommentRequest request) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
 
         Diary diary = diaryRepository.findById(request.getDiaryId())

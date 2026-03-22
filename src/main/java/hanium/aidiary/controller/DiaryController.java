@@ -18,6 +18,7 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -30,10 +31,10 @@ public class DiaryController {
 
     // 일기 작성
     @PostMapping("/")
-    public ResponseEntity<DiaryCreateResponse> create(@RequestBody DiaryCreateRequest diaryRequest) {
-        //일기 생성 후, 작성된 일기 불러오기
-        return ResponseEntity.ok(diaryService.createDiary(diaryRequest));
-
+    public ResponseEntity<DiaryCreateResponse> create(@RequestBody DiaryCreateRequest diaryRequest,
+                                                      Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(diaryService.createDiary(memberId, diaryRequest));
     }
 
     // 일기 조회 1. 결과창
@@ -43,52 +44,50 @@ public class DiaryController {
     }
 
     // 일기 조회 2. 캘린더
-    @GetMapping("/calendar/{memberId}")
-    public ResponseEntity<Object> findDiaryListInCalendar(@PathVariable Long memberId, @RequestParam int year, @RequestParam int month) {
-        System.out.println("DiaryController.findDiaryListInCalendar");
+    @GetMapping("/calendar")
+    public ResponseEntity<Object> findDiaryListInCalendar(Authentication authentication,
+                                                          @RequestParam int year, @RequestParam int month) {
+        Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(diaryService.findMyCalendarList(memberId, year, month));
     }
 
-
     // 일기 조회 3. 캘린더 상세창(개인)
-    @GetMapping("/calendar/detail/{memberId}")
-    public ResponseEntity<CalendarDetailDto> findCanlendarDetail(@PathVariable Long memberId, @RequestParam int year,
+    @GetMapping("/calendar/detail")
+    public ResponseEntity<CalendarDetailDto> findCanlendarDetail(Authentication authentication,
+                                                                 @RequestParam int year,
                                                                  @RequestParam int month, @RequestParam int day) {
+        Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(diaryService.findMyCanlendarDetail(memberId, year, month, day));
     }
 
     // 일기 조회 3. 캘린더 상세창(그룹)
-    @GetMapping("/calendar/group/{memberId}")
-    public ResponseEntity<Object> findGroupCanlendarDetail(@PathVariable Long memberId, @RequestParam int year,
+    @GetMapping("/calendar/group")
+    public ResponseEntity<Object> findGroupCanlendarDetail(Authentication authentication,
+                                                           @RequestParam int year,
                                                            @RequestParam int month, @RequestParam int day) {
+        Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(diaryService.findGroupCanlendarDetail(memberId, year, month, day));
     }
 
-/*
-    // groupId로 그룹 캘린더 받아오는 api
-    @GetMapping("/calendar2/group/{groupId}")
-    public ResponseEntity<Object> findGroupCanlendarDetail2(@PathVariable Long groupId, @RequestParam int year,
-                                                           @RequestParam int month, @RequestParam int day) {
-        return ResponseEntity.ok(diaryService.findGroupCanlendarDetail2(groupId, year, month, day));
-    }
-
- */
-
     // 일기 수정
     @PatchMapping("/{id}")
-    public ResponseEntity<Object> modifyDiary(@PathVariable(value = "id") long diaryId, @RequestBody DiaryCreateRequest diaryCreateRequest) {
-        return ResponseEntity.ok(diaryService.updateDiary(diaryId, diaryCreateRequest));
+    public ResponseEntity<Object> modifyDiary(@PathVariable(value = "id") long diaryId,
+                                              @RequestBody DiaryCreateRequest diaryCreateRequest,
+                                              Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(diaryService.updateDiary(diaryId, memberId, diaryCreateRequest));
     }
 
     // 일기 삭제
     @DeleteMapping("/")
-    public ResponseEntity<Object> deleteDiary(@RequestBody DiaryDeleteRequest diaryDeleteRequest) {
-
-        int deleteCount = diaryService.deleteDiary(diaryDeleteRequest);
+    public ResponseEntity<Object> deleteDiary(@RequestBody DiaryDeleteRequest diaryDeleteRequest,
+                                              Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        int deleteCount = diaryService.deleteDiary(memberId, diaryDeleteRequest);
         if (deleteCount == 0) {
             return ResponseEntity.badRequest().body("일기 삭제를 실패했습니다.");
         }
-        return ResponseEntity.status(HttpStatus.OK).body("일기 삭제 완료");//ok(null);
+        return ResponseEntity.status(HttpStatus.OK).body("일기 삭제 완료");
     }
 
 // Spring boot - Flask 연동

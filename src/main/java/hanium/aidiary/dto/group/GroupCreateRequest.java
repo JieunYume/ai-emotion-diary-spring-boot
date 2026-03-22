@@ -1,6 +1,5 @@
 package hanium.aidiary.dto.group;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,4 @@ import lombok.NoArgsConstructor;
 public class GroupCreateRequest {
 
     private String name;
-
-    @NotBlank
-    private Long creatorId;
 }

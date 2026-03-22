@@ -5,6 +5,7 @@ import hanium.aidiary.domain.Crop;
 import hanium.aidiary.domain.File;
 import hanium.aidiary.domain.Member;
 import hanium.aidiary.domain.MemberType;
+import hanium.aidiary.config.jwt.JwtProvider;
 import hanium.aidiary.dto.auth.JoinRequest;
 import hanium.aidiary.dto.auth.JoinResponse;
 import hanium.aidiary.dto.auth.LoginRequest;
@@ -13,6 +14,7 @@ import hanium.aidiary.exception.CustomException;
 import hanium.aidiary.repository.FileRepository;
 import hanium.aidiary.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,10 @@ public class AuthService {
     private final FileRepository fileRepository; // -> fileService에 넣기
     private final CropService cropService;
     private final AmazonS3 amazonS3;
+    private final JwtProvider jwtProvider;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     public void isDuplicateEmail(String email) {
         Member findMember = memberRepository.findByEmail(email).orElse(null);
@@ -54,6 +60,7 @@ public class AuthService {
         Member saveMember = memberRepository.save(Member.builder()
                 .email(joinRequest.getEmail())
                 .password(passwordEncoder.encode(joinRequest.getPassword()))
+                .nickName(joinRequest.getNickName())
                 .type(MemberType.USER)
                 .file(file)
                 .crop(saveCrop)
@@ -77,12 +84,14 @@ public class AuthService {
         if (passwordEncoder.matches(loginDto.getPassword(), member.getPassword()) == false) {
             throw new CustomException(PASSWORD_NOT_MATCH);
         }
-        URL url = amazonS3.getUrl("aidiary-bucket", member.getFile().getOrigFilename());
+        URL url = amazonS3.getUrl(bucket, member.getFile().getOrigFilename());
         String urltext = ""+url;
+        String token = jwtProvider.generateToken(member.getId());
         return LoginResponse.builder()
                 .memberId(member.getId())
                 .nickName(member.getNickName())
                 .fileUrl(urltext)
+                .accessToken(token)
                 .build();
     }
 }
