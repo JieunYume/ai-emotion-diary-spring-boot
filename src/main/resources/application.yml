@@ -1,9 +1,9 @@
 spring:
   config:
     import:
-      - classpath:/application-local.yml
-      - classpath:/application-mail.yml
-      - classpath:/application-s3.yml
+      - optional:classpath:/application-local.yml
+      - optional:classpath:/application-mail.yml
+      - optional:classpath:/application-s3.yml
   servlet:
     multipart:
       enabled: true
