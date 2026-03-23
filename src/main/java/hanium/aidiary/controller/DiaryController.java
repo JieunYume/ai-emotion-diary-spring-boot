@@ -64,7 +64,9 @@ public class DiaryController {
     @GetMapping("/calendar/group")
     public ResponseEntity<Object> findGroupCanlendarDetail(Authentication authentication,
                                                            @RequestParam int year,
-                                                           @RequestParam int month, @RequestParam int day) {
+                                                           @RequestParam int month,
+                                                           @RequestParam int day
+    ) {
         Long memberId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(diaryService.findGroupCanlendarDetail(memberId, year, month, day));
     }

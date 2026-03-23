@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static hanium.aidiary.handler.ErrorCode.*;
 
@@ -211,7 +212,8 @@ public class DiaryService {
         return null;
     }
 
-    public GroupCalendarDetailResponse findGroupCanlendarDetail(Long memberId, int year, int month, int day) {
+    // V1: 기존 방식 - N+1 문제 발생 (멤버 수만큼 일기 조회 쿼리 반복)
+    public GroupCalendarDetailResponse findGroupCanlendarDetailV1(Long memberId, int year, int month, int day) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
         if (member.getGroup() == null) {
@@ -219,8 +221,8 @@ public class DiaryService {
         }
         List<Member> members = member.getGroup().getMembers();
         List<CalendarDetailDto> detailList = new ArrayList<>();
-        for(Member groupMember : members){
-            for(Diary diary: groupMember.getDiaries()) {
+        for (Member groupMember : members) {
+            for (Diary diary : groupMember.getDiaries()) {
                 LocalDateTime createDate = diary.getCreateDate();
                 if (createDate.getYear() == year && createDate.getMonthValue() == month && createDate.getDayOfMonth() == day) {
                     detailList.add(CalendarDetailDto.builder()
@@ -236,6 +238,34 @@ public class DiaryService {
                 }
             }
         }
+        return GroupCalendarDetailResponse.builder()
+                .groupCalendarDetailList(detailList)
+                .build();
+    }
+
+    // V2: 개선된 방식 - Fetch Join으로 2쿼리 고정
+    public GroupCalendarDetailResponse findGroupCanlendarDetail(Long memberId, int year, int month, int day) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(USER_NOT_FOUND));
+        if (member.getGroup() == null) {
+            throw new CustomException(GROUP_NOT_EXIST);
+        }
+
+        // Fetch Join으로 그룹 전체 멤버의 해당 날짜 일기를 1번 쿼리로 조회
+        Long groupId = member.getGroup().getId();
+        List<Diary> diaries = diaryRepository.findByGroupIdAndDate(groupId, year, month, day);
+
+        List<CalendarDetailDto> detailList = diaries.stream()
+                .map(diary -> CalendarDetailDto.builder()
+                        .memberId(diary.getMember().getId())
+                        .diaryId(diary.getId())
+                        .nickName(diary.getMember().getNickName())
+                        .moodEmojiName(diary.getMoodEmojiName())
+                        .createDate(diary.getCreateDate())
+                        .thing(diary.getThing())
+                        .likeCount(diary.getLikeCount())
+                        .build())
+                .collect(Collectors.toList());
 
         return GroupCalendarDetailResponse.builder()
                 .groupCalendarDetailList(detailList)
