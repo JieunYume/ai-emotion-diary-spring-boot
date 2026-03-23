@@ -58,5 +58,6 @@ jobs:
               --spring.profiles.active=prod \
               --spring.config.additional-location=file:/home/ubuntu/app/ \
               > /home/ubuntu/app/app.log 2>&1 &
+            disown
 
             echo "배포 완료"
