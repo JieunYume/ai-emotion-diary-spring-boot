@@ -44,4 +44,7 @@ application-local.yml
 application-mail.yml
 application-s3.yml
 
+# SSL keystore
+*.p12
+
 CLAUDE.md

@@ -4,9 +4,9 @@ import hanium.aidiary.exception.FileStorageException;
 import hanium.aidiary.exception.MyFileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,14 +20,14 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-@Service
+// S3(FileUploadService)로 전환 후 미사용 - Bean 등록 비활성화
 public class FileStorageService {
 
     private Path fileStorageLocation;
 
     @Autowired
-    public FileStorageService() {
-        this.fileStorageLocation = Paths.get("/User/upload")
+    public FileStorageService(@Value("${file.upload-dir}") String uploadDir) {
+        this.fileStorageLocation = Paths.get(uploadDir)
                 .toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.fileStorageLocation);

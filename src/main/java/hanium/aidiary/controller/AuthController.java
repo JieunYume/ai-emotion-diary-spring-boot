@@ -8,7 +8,6 @@ import hanium.aidiary.dto.auth.LoginResponse;
 import hanium.aidiary.exception.CustomException;
 import hanium.aidiary.service.AuthService;
 import hanium.aidiary.service.EmailService;
-import hanium.aidiary.service.FileStorageService;
 import hanium.aidiary.service.FileUploadService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.constraints.Email;
@@ -35,33 +34,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailService emailService;
-    private final FileStorageService fileStorageService;
     private final FileUploadService fileUploadService;
-/*
-    @PostMapping(value ="/join", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Object> join(@RequestPart JoinRequest joinRequest,
-                            @RequestPart MultipartFile imgFile) {
-        if(imgFile.isEmpty()){
-            throw new CustomException(IMAGE_NOT_EXIST);
-        }
-
-        String filename = fileStorageService.storeFile(imgFile);
-        String origFilename = StringUtils.cleanPath(imgFile.getOriginalFilename());
-
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/file/downloadfile/")
-                .path(filename)
-                .toUriString();
-        System.out.println("fileDownloadUri" + fileDownloadUri);
-        FileDto fileDto = FileDto.builder()
-                .filename(filename)
-                .origFilename(origFilename)
-                .filePath(fileDownloadUri)
-                .build();
-        return ResponseEntity.ok(authService.join(joinRequest, fileDto));
-    }
-
- */
 
     @PostMapping(value ="/join", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> join(

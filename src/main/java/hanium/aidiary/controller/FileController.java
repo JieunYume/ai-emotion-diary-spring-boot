@@ -17,9 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+// S3(FileUploadService)로 전환 후 미사용 - Bean 등록 비활성화
 @Slf4j
 @RequiredArgsConstructor
-@RestController
+// @RestController
 @RequestMapping("/file")
 public class FileController {
     private final FileStorageService fileStorageService;
