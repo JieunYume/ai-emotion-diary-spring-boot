@@ -1,6 +1,5 @@
 package hanium.aidiary.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import hanium.aidiary.domain.Group;
 import hanium.aidiary.domain.Member;
 import hanium.aidiary.dto.group.GroupCreateRequest;
@@ -12,11 +11,9 @@ import hanium.aidiary.exception.CustomException;
 import hanium.aidiary.repository.GroupRepository;
 import hanium.aidiary.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,10 +25,7 @@ import static hanium.aidiary.handler.ErrorCode.*;
 public class GroupService {
     private final GroupRepository groupRepository;
     private final MemberRepository memberRepository;
-    private final AmazonS3 amazonS3;
-
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    private final FileUploadService fileUploadService;
 
     private int codeLength = 8;
     private final char[] characterTable = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
@@ -117,8 +111,7 @@ public class GroupService {
             if (groupMember.getId() == member.getId()) { // 사용자 자신은 제외
                 continue;
             }
-            URL url = amazonS3.getUrl(bucket, groupMember.getFile().getOrigFilename());
-            String urltext = ""+url;
+            String urltext = fileUploadService.getPresignedUrl(groupMember.getFile().getOrigFilename());
 
             groupMemberList.add(GroupMemberDto.builder()
                     .memberId(groupMember.getId())

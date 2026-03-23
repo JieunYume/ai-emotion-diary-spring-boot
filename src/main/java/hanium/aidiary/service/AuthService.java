@@ -1,6 +1,5 @@
 package hanium.aidiary.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import hanium.aidiary.domain.Crop;
 import hanium.aidiary.domain.File;
 import hanium.aidiary.domain.Member;
@@ -19,8 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URL;
-
 import static hanium.aidiary.handler.ErrorCode.*;
 
 @Service // jpa가 성능을 최적화해줌, '이건 읽기 전용이야' 읽기 전용이 많으면 여기에 넣어주고, 읽기 전용이 아닌 메소드에 @Transactional 달아줌
@@ -29,13 +26,10 @@ public class AuthService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final FileRepository fileRepository; // -> fileService에 넣기
+    private final FileRepository fileRepository;
     private final CropService cropService;
-    private final AmazonS3 amazonS3;
+    private final FileUploadService fileUploadService;
     private final JwtProvider jwtProvider;
-
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
 
     public void isDuplicateEmail(String email) {
         Member findMember = memberRepository.findByEmail(email).orElse(null);
@@ -84,11 +78,9 @@ public class AuthService {
         if (passwordEncoder.matches(loginDto.getPassword(), member.getPassword()) == false) {
             throw new CustomException(PASSWORD_NOT_MATCH);
         }
-        URL url = amazonS3.getUrl(bucket, member.getFile().getOrigFilename());
-        String urltext = ""+url;
+        String urltext = fileUploadService.getPresignedUrl(member.getFile().getOrigFilename());
         String token = jwtProvider.generateToken(member.getId());
         return LoginResponse.builder()
-                .memberId(member.getId())
                 .nickName(member.getNickName())
                 .fileUrl(urltext)
                 .accessToken(token)
