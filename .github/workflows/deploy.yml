@@ -47,17 +47,5 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
-            # 기존 프로세스 종료
-            pkill -f "aidiary" || true
-
-            # 잠시 대기
-            sleep 3
-
-            # 새 버전 실행
-            nohup /usr/bin/java -jar /home/ubuntu/app/aidiary-0.0.1-SNAPSHOT.jar \
-              --spring.profiles.active=prod \
-              --spring.config.additional-location=file:/home/ubuntu/app/ \
-              > /home/ubuntu/app/app.log 2>&1 </dev/null &
-            disown $!
-
+            sudo systemctl restart aidiary
             echo "배포 완료"
